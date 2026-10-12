@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product Inventory & Analytics Dashboard</title>
+    <style>
+        :root {
+            font-family: Arial, Helvetica, sans-serif;
+            color: #1f2937;
+            background: #f3f6fb;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: #172554;
+            color: white;
+            padding: 26px;
+            border-radius: 16px;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+            font-size: clamp(1.45rem, 4vw, 2rem);
+        }
+
+        header p {
+            margin: 0;
+            color: #dbeafe;
+            line-height: 1.5;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 18px 0;
+        }
+
+        button {
+            border: 0;
+            border-radius: 9px;
+            padding: 11px 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        button.primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        button.secondary {
+            background: #e0e7ff;
+            color: #1e3a8a;
+        }
+
+        button:hover {
+            filter: brightness(.96);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin: 16px 0;
+        }
+
+        .card,
+        section {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 3px 12px #0f172a0a;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: .9rem;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        section {
+            margin: 16px 0;
+        }
+
+        h2 {
+            margin: 0 0 14px;
+            font-size: 1.15rem;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 11px 9px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            color: #475569;
+            font-size: .86rem;
+            background: #f8fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 4px 9px;
+            font-size: .8rem;
+            font-weight: 700;
+        }
+
+        .Budget {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .Standard {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .Premium {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .reports {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            background: #0f172a;
+            color: #d1fae5;
+            padding: 14px;
+            border-radius: 10px;
+            min-height: 80px;
+            line-height: 1.5;
+        }
+        .message {
+            margin: 10px 0;
+            color: #b91c1c;
+            min-height: 1.2em;
+        }
+
+        
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            th,
+            td {
+                padding: 9px 5px;
+                font-size: .88rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Product Inventory & Analytics Dashboard</h1>
+        </header>
+        <div class="actions">
+            <button class="primary" id="addProductBtn">+ Add Product (prompt)</button>
+            <button class="secondary" id="resetBtn">Reset Inventory</button>
+            <button class="secondary" id="showConsoleBtn">Show Console Report</button>
+        </div>
+        <div id="message" class="message" role="status"></div>
+
+        <div class="stats">
+            <div class="card">
+                <div class="stat-label">Total Products</div>
+                <div class="stat-value" id="productCount">3</div>
+            </div>
+            <div class="card">
+                <div class="stat-label">Total Inventory Value</div>
+                <div class="stat-value" id="inventoryValue">$975.00</div>
+            </div>
+            <div class="card">
+                <div class="stat-label">Affordable Items (under $200)</div>
+                <div class="stat-value" id="affordableCount">2</div>
+            </div>
+        </div>
+
+        <section>
+            <h2>Inventory Roster</h2>
+            <div style="overflow-x:auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Category</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryBody"></tbody>
+                </table>
+            </div>
+        </section>
+        <div class="reports">
+            <section>
+                <h2>Affordable Products (&lt; $200)</h2>
+                <pre id="affordableReport"></pre>
+            </section>
+            <section>
+                <h2>Generate Report</h2>
+                <pre id="formattedReport"></pre>
+            </section>
+        </div>
+        <section>
+            <h2>Console Report</h2>
+            <pre id="consoleReport">Show Console Report</pre>
+        </section>
+    </div>
+
+    <script>
+        const initialInventory = [
+            { name: "Laptop", price: 800 },
+            { name: "Mouse", price: 25 },
+            { name: "Monitor", price: 150 }
+        ];
+        let inventory = initialInventory.map(product => ({ ...product }));
+
+        function getCategory(price) {
+            let category;
+
+            if (price < 50) {
+                category = "Budget";
+            } else if (price < 200) {
+                category = "Standard";
+            } else {
+                category = "Premium";
+            }
+
+           
+            switch (category) {
+                case "Budget":
+                    return "Budget";
+                case "Standard":
+                    return "Standard";
+                case "Premium":
+                    return "Premium";
+                default:
+                    return "Unknown";
+            }
+        }
+        function calculateTotal(items = inventory) {
+            let total = 0;
+            items.forEach(function (item) {
+                total += item.price;
+            });
+            return total;
+        }
+        const calculateAfterTaxAndDiscount = (price, taxRate = 0, discountRate = 0) => {
+            const discountedPrice = price * (1 - discountRate);
+            return discountedPrice * (1 + taxRate);
+        };
+
+        function addProduct() {
+            const rawName = prompt("Enter the new product name (e.g., Keyboard):");
+
+            if (rawName === null || rawName.trim() === "") {
+                document.getElementById("message").textContent = "No product added: name was empty or cancelled.";
+                return;
+            }
+
+            const rawPrice = prompt("Enter the product price in dollars (e.g., 49.99):");
+            if (rawPrice === null || rawPrice.trim() === "") {
+                document.getElementById("message").textContent = "No product added: price was empty or cancelled.";
+                return;
+            }
+
+            const name = rawName.trim();
+            const price = Number(rawPrice);
+
+            if (!Number.isFinite(price) || price <= 0) {
+                document.getElementById("message").textContent = "Invalid price. Please enter a number greater than 0.";
+                return;
+            } else {
+                inventory.push({ name, price });
+                document.getElementById("message").textContent = `${name} was added successfully.`;
+                renderDashboard();
+            }
+        }
+
+        function findFirstMatchingNumber() {
+            let number = 11;
+            while (number > 10) {
+                if (number % 6 === 0) {
+                    break;
+                }
+                number++;
+            }
+            return number;
+        }
+        function demonstrateLoopControl() {
+            let number = 0;
+            const visited = [];
+            do {
+                number++;
+                if (number === 2) {
+                    continue; 
+                }
+                visited.push(number);
+            } while (number < 5);
+            console.log("do...while with continue (skips 2):", visited);
+            console.log("First number > 10 divisible by 6:", findFirstMatchingNumber());
+        }
+
+        function renderDashboard() {
+            const body = document.getElementById("inventoryBody");
+            body.innerHTML = "";
+
+            for (let i = 0; i < inventory.length; i++) {
+                const item = inventory[i];
+                if (!item || typeof item.name !== "string" || !Number.isFinite(item.price)) {
+                    continue;
+                }
+
+                const row = document.createElement("tr");
+                const nameCell = document.createElement("td");
+                const priceCell = document.createElement("td");
+                const categoryCell = document.createElement("td");
+                nameCell.textContent = item.name;
+                priceCell.textContent = `$${item.price.toFixed(2)}`;
+
+                const category = getCategory(item.price);
+                const badge = document.createElement("span");
+                badge.className = `badge ${category}`;
+                badge.textContent = category;
+                categoryCell.appendChild(badge);
+
+                row.append(nameCell, priceCell, categoryCell);
+                body.appendChild(row);
+            }
+
+            const total = calculateTotal(inventory);
+            const affordableItems = inventory.filter(item => item.price < 200);
+            const formattedItems = inventory.map(item => `${item.name.toUpperCase()}: $${item.price}`);
+
+            document.getElementById("productCount").textContent = inventory.length;
+            document.getElementById("inventoryValue").textContent = `$${total.toFixed(2)}`;
+            document.getElementById("affordableCount").textContent = affordableItems.length;
+            document.getElementById("affordableReport").textContent = JSON.stringify(
+                affordableItems.map(item => item.name), null, 2
+            );
+            document.getElementById("formattedReport").textContent = JSON.stringify(formattedItems, null, 2);
+        }
+
+        function printConsoleReport() {
+            console.clear();
+            console.log("--- Initializing Inventory System ---");
+            console.log("Inventory items:", inventory.length);
+
+            console.log("\\n--- Processing Inventory Roster (forEach) ---");
+            inventory.forEach(item => {
+                console.log(`* Item: ${item.name} ($${item.price}) -> Category: ${getCategory(item.price)}`);
+            });
+
+            console.log("\\n--- Financial Analytics ---");
+            console.log(`Total Inventory Value: $${calculateTotal(inventory)}`);
+
+            const affordableItems = inventory.filter(item => item.price < 200);
+            console.log("Filtered Affordable Items (Under $200):", affordableItems.map(item => item.name));
+
+            const formattedItems = inventory.map(item => `${item.name.toUpperCase()}: $${item.price}`);
+            console.log("Formatted Report List:", formattedItems);
+
+            console.log("Example: $100 with 10% tax and 5% discount =", calculateAfterTaxAndDiscount(100, 0.10, 0.05).toFixed(2));
+            demonstrateLoopControl();
+
+            document.getElementById("consoleReport").textContent =
+                `--- Processing Inventory Roster (forEach) ---\\n` +
+                inventory.map(item => `* Item: ${item.name} ($${item.price}) -> Category: ${getCategory(item.price)}`).join("\\n") +
+                `\\n\\n--- Financial Analytics ---\\nTotal Inventory Value: $${calculateTotal(inventory).toFixed(2)}` +
+                `\\nFiltered Affordable Items (Under $200): ${JSON.stringify(affordableItems.map(item => item.name))}` +
+                `\\nFormatted Report List: ${JSON.stringify(formattedItems)}`;
+        }
+
+        function resetInventory() {
+            inventory = initialInventory.map(product => ({ ...product }));
+            document.getElementById("message").textContent = "Inventory reset to the original sample products.";
+            document.getElementById("consoleReport").textContent = "Click “Show Console Report” to print the report.";
+            renderDashboard();
+        }
+        document.getElementById("addProductBtn").addEventListener("click", addProduct);
+        document.getElementById("resetBtn").addEventListener("click", resetInventory);
+        document.getElementById("showConsoleBtn").addEventListener("click", printConsoleReport);
+        renderDashboard();
+    </script>
+</body>
+</html>
